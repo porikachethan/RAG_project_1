@@ -7,5 +7,5 @@ def spliting_into_chunks (documents):
         chunk_size = config.CHUNK_SIZE,
         chunk_overlap = config.CHUNK_OVERLAP
     )
-    chunks = splitter.split_documents(documents)
-    return  chunks 
+
+    return splitter.split_documents([documents])

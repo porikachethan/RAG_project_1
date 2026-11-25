@@ -1,43 +1,44 @@
+
 from hr_assistant import config
 from hr_assistant.agent import create_hr_agent
 from hr_assistant.document_loader import load_document
-from hr_assistant.embeddings import embedding_model
 from hr_assistant.llm import get_llm
-from hr_assistant.splitter  import spliting_into_chunks
-from hr_assistant.tools  import search_hr_policy,create_search_tool
-from hr_assistant.vector_store  import (build_vector_store ,
-load_vector_store
-,vector_store_exists,
-save_vector_store ,
-get_retriever)
+from hr_assistant.splitter import spliting_into_chunks
+from hr_assistant.tools import create_search_tool
+from hr_assistant.vector_store import (
+    build_vector_store,
+    load_vector_store,
+    vector_store_exists,
+    save_vector_store,
+    get_retriever
+)
 
 
 def build_vector_store_for_document(file_path: str = config.DATA_FILE_PATH):
-    """Load + split + embed the document, 
-    reusing the Qdrant Cloud collection if we have one."""
+
     if vector_store_exists():
-        print("Found an existing chromadb , connecting to it (fast, no re-embedding).")
+        print("Found existing ChromaDB, connecting to it.")
         return load_vector_store()
 
-    print("No chroma db collection found, building one from scratch...")
+    print("No ChromaDB collection found. Building one...")
+
     documents = load_document(file_path)
     chunks = spliting_into_chunks(documents)
+
     print(f"Loaded '{file_path}' and split it into {len(chunks)} chunks.")
 
     vector_store = build_vector_store(chunks)
-    save_vector_store (vector_store)
-    print("Vector store built and uploaded to Qdrant Cloud.")
+    save_vector_store(vector_store)
+
+    print("Vector store built and saved to ChromaDB.")
+
     return vector_store
 
 
-
-
-
-
 def build_hr_assistant(file_path: str = config.DATA_FILE_PATH):
-    """Build the full RAG agent, ready to answer questions."""
-    
+
     vector_store = build_vector_store_for_document(file_path)
+
     retriever = get_retriever(vector_store)
     search_tool = create_search_tool(retriever)
 
@@ -47,13 +48,17 @@ def build_hr_assistant(file_path: str = config.DATA_FILE_PATH):
     return agent
 
 
-
 def ask(agent, question: str) -> str:
-    """Ask the agent a question and
-    return its final answer as plain text."""
 
-    response = agent.invoke({"messages": [{"role": "user", "content": question}]})
-    answer = response["messages"][-1].content
+    response = agent.invoke({
+        "messages": [
+            {"role": "user", "content": question}
+        ]
+    })
+
+    return response["messages"][-1].content
+
+
 
 
 
