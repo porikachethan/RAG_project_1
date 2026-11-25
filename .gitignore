@@ -13,3 +13,4 @@ chroma_db
 RAG.ipynb
 .gitignore
 uv.lock
+app.py
